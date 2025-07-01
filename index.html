@@ -2,14 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MALABAR – Datos de Facturación</title>
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    /* Reset muy ligero */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Poppins', sans-serif;
       background: #f5f5f5;
@@ -21,25 +19,15 @@
       padding: 2rem 1rem;
       color: #333;
     }
-
     .card {
       width: 100%;
       max-width: 480px;
-      background: #ffffff;
+      background: #fff;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       padding: 2rem;
       position: relative;
     }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 500;
-      text-align: center;
-      margin-bottom: 0.5rem;
-      color: #222;
-    }
-
     h2 {
       font-size: 1.25rem;
       font-weight: 300;
@@ -47,17 +35,14 @@
       margin-bottom: 1.5rem;
       color: #555;
     }
-
-    form > label,
-    fieldset > label {
+    form > label {
       display: block;
       margin-bottom: 1rem;
       font-size: 0.925rem;
       font-weight: 300;
       color: #555;
     }
-
-    input {
+    input, select {
       width: 100%;
       border: none;
       border-bottom: 1px solid #ccc;
@@ -68,34 +53,15 @@
       background: transparent;
       transition: border-color 0.2s;
     }
-
-    input::placeholder {
-      color: #aaa;
-    }
-
-    input:focus {
+    input::placeholder { color: #aaa; }
+    input:focus, select:focus {
       outline: none;
       border-bottom-color: #007aff;
     }
-
-    fieldset {
-      border: none;
-      margin-bottom: 1.5rem;
-      padding: 0;
-    }
-
-    legend {
-      font-weight: 500;
-      color: #444;
-      margin-bottom: 0.75rem;
-      font-size: 1rem;
-    }
-
     .actions {
       margin-top: 2rem;
       text-align: center;
     }
-
     #whatsappBtn {
       background: #007aff;
       color: #fff;
@@ -107,23 +73,30 @@
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
     }
+    #whatsappBtn:hover { background: #005ecb; }
+    #whatsappBtn:active { transform: translateY(1px); }
 
-    #whatsappBtn:hover {
-      background: #005ecb;
-    }
-
-    #whatsappBtn:active {
-      transform: translateY(1px);
-    }
-
+    /* ALERTA FLOTANTE DINÁMICA AJUSTADA PARA MÓVIL */
     #status {
-      position: absolute;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      max-width: calc(100% - 2rem);
+      background: rgba(0,122,255,0.1);
+      color: #007aff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
       font-size: 0.85rem;
-      color: #888;
-      min-height: 1em;
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    #status.visible {
+      opacity: 1;
     }
 
     footer {
@@ -132,6 +105,7 @@
       color: #888;
       text-align: center;
     }
+    #otroRegimen { display: none; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -139,6 +113,10 @@
   <div class="card">
     <h2>Datos de Facturación</h2>
     <h2>MALABAR</h2>
+
+    <!-- Mensaje dinámico -->
+    <div id="status">Guardado automático ✓</div>
+
     <form id="facturaForm" autocomplete="off">
       <label for="razonSocial">Nombre o Razón Social
         <input type="text" id="razonSocial" placeholder="Ej. Juan Pérez" />
@@ -148,50 +126,52 @@
         <input type="text" id="rfc" placeholder="Ej. ABCD960404HCC" />
       </label>
 
-      <fieldset>
-        <legend>Dirección Fiscal</legend>
+      <label for="regimenFiscal">Régimen Fiscal
+        <select id="regimenFiscal">
+          <option value="" disabled selected>Selecciona tu régimen</option>
+          <option value="601">601 – General de Ley Personas Morales</option>
+          <option value="603">603 – Personas Morales con Fines no Lucrativos</option>
+          <option value="605">605 – Sueldos y Salarios e Ingresos Asimilados a Salarios</option>
+          <option value="606">606 – Arrendamiento</option>
+          <option value="608">608 – Demás ingresos</option>
+          <option value="610">610 – Residentes en el Extranjero sin Establecimiento Permanente en México</option>
+          <option value="611">611 – Ingresos por Dividendos (socios y accionistas)</option>
+          <option value="612">612 – Personas Físicas con Actividades Empresariales y Profesionales</option>
+          <option value="614">614 – Ingresos por intereses</option>
+          <option value="615">615 – Régimen de los ingresos por obtención de premios</option>
+          <option value="616">616 – Sin obligaciones fiscales</option>
+          <option value="620">620 – Sociedades Cooperativas de Producción que optan por diferir sus ingresos</option>
+          <option value="621">621 – Incorporación Fiscal</option>
+          <option value="622">622 – Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras</option>
+          <option value="623">623 – Opcional para Grupos de Sociedades</option>
+          <option value="624">624 – Coordinados</option>
+          <option value="628">628 – Hidrocarburos</option>
+          <option value="629">629 – De los Coordinados</option>
+          <option value="630">630 – Enajenación de acciones en Bolsa de Valores</option>
+          <option value="Otros">Otro</option>
+        </select>
+      </label>
+      <input
+        type="text"
+        id="otroRegimen"
+        placeholder="Especifica tu régimen fiscal"
+      />
 
-        <label for="calle">Calle y Número (Ext./Int.)
-          <input type="text" id="calle" placeholder="Ej. Av. Principal 123" />
-        </label>
-
-        <label for="colonia">Colonia
-          <input type="text" id="colonia" placeholder="Ej. Centro" />
-        </label>
-
-        <label for="municipio">Delegación/Municipio
-          <input type="text" id="municipio" placeholder="Ej. Benito Juárez" />
-        </label>
-
-        <label for="ciudad">Ciudad
-          <input type="text" id="ciudad" placeholder="Ej. Ciudad de México" />
-        </label>
-
-        <label for="estado">Estado
-          <input type="text" id="estado" placeholder="Ej. CDMX" />
-        </label>
-
-        <label for="cp">Código Postal
-          <input type="text" id="cp" placeholder="Ej. 01234" />
-        </label>
-
-        <label for="pais">País
-          <input type="text" id="pais" value="México" />
-        </label>
-      </fieldset>
+      <label for="cp">Código Postal
+        <input type="text" id="cp" placeholder="Ej. 01234" />
+      </label>
 
       <label for="email">Correo Electrónico
         <input type="email" id="email" placeholder="ejemplo@correo.com" />
       </label>
 
-      <label for="telefono">Teléfono/Celular
-        <input type="tel" id="telefono" placeholder="10 dígitos" />
+      <label for="montoTickets">Monto exacto de su consumo en tickets
+        <input type="number" id="montoTickets" placeholder="Ej. 1500" />
       </label>
 
       <div class="actions">
         <button type="button" id="whatsappBtn">Enviar por WhatsApp</button>
       </div>
-      <div id="status"></div>
     </form>
   </div>
 
@@ -200,65 +180,81 @@
   </footer>
 
   <script>
-    const numeroDestino = '529382502171'; // 52 + 10 dígitos
-
+    const numeroDestino = '529381025536';
     const campos = [
-      'razonSocial','rfc','calle','colonia',
-      'municipio','ciudad','estado','cp',
-      'pais','email','telefono'
+      'razonSocial','rfc','regimenFiscal','otroRegimen',
+      'cp','email','montoTickets'
     ];
     const statusEl = document.getElementById('status');
-    const datosGuardados = JSON.parse(localStorage.getItem('datosFactura') || '{}');
+    let hideTimer;
+
+    // Mostrar/ocultar "otro régimen"
+    document.getElementById('regimenFiscal').addEventListener('change', e => {
+      const otro = document.getElementById('otroRegimen');
+      if (e.target.value === 'Otros') otro.style.display = 'block';
+      else {
+        otro.style.display = 'none';
+        otro.value = '';
+      }
+      triggerSave();
+    });
 
     // Carga inicial
     window.addEventListener('DOMContentLoaded', () => {
+      const datos = JSON.parse(localStorage.getItem('datosFactura') || '{}');
       campos.forEach(id => {
-        document.getElementById(id).value = datosGuardados[id] || '';
+        const el = document.getElementById(id);
+        if (el) el.value = datos[id] || '';
       });
+      if (datos['regimenFiscal'] === 'Otros') {
+        document.getElementById('otroRegimen').style.display = 'block';
+      }
     });
 
-    // Leer datos
-    const leerDatos = () =>
-      campos.reduce((o, id) => {
-        o[id] = document.getElementById(id).value.trim();
-        return o;
-      }, {});
-
-    // Auto‑guardado
-    const autoGuardar = () => {
-      localStorage.setItem('datosFactura', JSON.stringify(leerDatos()));
-      statusEl.textContent = 'Guardado automático ✓';
-      clearTimeout(autoGuardar._t);
-      autoGuardar._t = setTimeout(() => statusEl.textContent = '', 1500);
+    // Leer datos del formulario
+    const leerDatos = () => {
+      const o = {};
+      campos.forEach(id => o[id] = document.getElementById(id).value.trim());
+      return o;
     };
-    campos.forEach(id =>
-      document.getElementById(id).addEventListener('input', autoGuardar)
-    );
+
+    // Guarda y gestiona alerta
+    function triggerSave() {
+      clearTimeout(hideTimer);
+      localStorage.setItem('datosFactura', JSON.stringify(leerDatos()));
+      statusEl.classList.add('visible');
+      hideTimer = setTimeout(() => {
+        statusEl.classList.remove('visible');
+      }, 1500);
+    }
+
+    // Auto‑guardado al terminar de escribir
+    campos.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        let typingTimer;
+        el.addEventListener('input', () => {
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(triggerSave, 800);
+        });
+      }
+    });
 
     // Enviar por WhatsApp
     document.getElementById('whatsappBtn').addEventListener('click', () => {
       const d = leerDatos();
+      const regimenTexto = d.regimenFiscal === 'Otros' ? d.otroRegimen : d.regimenFiscal;
       const textoPlano = [
         '*Datos de Facturación*',
         `• Razón Social: ${d.razonSocial}`,
         `• RFC: ${d.rfc}`,
-        `• Calle: ${d.calle}`,
-        `• Colonia: ${d.colonia}`,
-        `• Municipio: ${d.municipio}`,
-        `• Ciudad: ${d.ciudad}`,
-        `• Estado: ${d.estado}`,
-        `• CP: ${d.cp}`,
-        `• País: ${d.pais}`,
+        `• Régimen Fiscal: ${regimenTexto}`,
+        `• Código Postal: ${d.cp}`,
         `• Email: ${d.email}`,
-        `• Teléfono: ${d.telefono}`
+        `• Monto consumo en tickets: ${d.montoTickets}`
       ].join('\n');
-
-      // Copiar al portapapeles (opcional)
       navigator.clipboard?.writeText(textoPlano).catch(() => {});
-
-      // Redirigir a WhatsApp
-      window.location.href =
-        `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoPlano)}`;
+      window.location.href = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoPlano)}`;
     });
   </script>
 
