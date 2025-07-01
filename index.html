@@ -76,7 +76,7 @@
     #whatsappBtn:hover { background: #005ecb; }
     #whatsappBtn:active { transform: translateY(1px); }
 
-    /* ALERTA FLOTANTE DINÁMICA AJUSTADA PARA MÓVIL */
+    /* ALERTA FLOTANTE PARA MÓVIL */
     #status {
       position: fixed;
       top: 1rem;
@@ -95,9 +95,7 @@
       transition: opacity 0.3s;
       z-index: 1000;
     }
-    #status.visible {
-      opacity: 1;
-    }
+    #status.visible { opacity: 1; }
 
     footer {
       margin-top: 2rem;
@@ -105,7 +103,11 @@
       color: #888;
       text-align: center;
     }
-    #otroRegimen { display: none; margin-top: 0.5rem; }
+    #otroRegimen,
+    #otroCfdi {
+      display: none;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -119,15 +121,15 @@
 
     <form id="facturaForm" autocomplete="off">
       <label for="razonSocial">Nombre o Razón Social
-        <input type="text" id="razonSocial" placeholder="Ej. Juan Pérez" />
+        <input type="text" id="razonSocial" placeholder="Ej. Juan Pérez" required />
       </label>
 
       <label for="rfc">RFC
-        <input type="text" id="rfc" placeholder="Ej. ABCD960404HCC" />
+        <input type="text" id="rfc" placeholder="Ej. ABCD960404HCC" required />
       </label>
 
       <label for="regimenFiscal">Régimen Fiscal
-        <select id="regimenFiscal">
+        <select id="regimenFiscal" required>
           <option value="" disabled selected>Selecciona tu régimen</option>
           <option value="601">601 – General de Ley Personas Morales</option>
           <option value="603">603 – Personas Morales con Fines no Lucrativos</option>
@@ -151,22 +153,30 @@
           <option value="Otros">Otro</option>
         </select>
       </label>
-      <input
-        type="text"
-        id="otroRegimen"
-        placeholder="Especifica tu régimen fiscal"
-      />
+      <input type="text" id="otroRegimen" placeholder="Especifica tu régimen fiscal" required />
+
+      <label for="usoCfdi">Uso de CFDI
+        <select id="usoCfdi" required>
+          <option value="" disabled selected>Selecciona uso de CFDI</option>
+          <option value="G01">G01 – Adquisición de mercancías</option>
+          <option value="G03">G03 – Gastos en general</option>
+          <option value="I01">I01 – Construcciones</option>
+          <option value="P01">P01 – Por definir</option>
+          <option value="OtrosCfdi">Otro</option>
+        </select>
+      </label>
+      <input type="text" id="otroCfdi" placeholder="Especifica el uso de CFDI" required />
 
       <label for="cp">Código Postal
-        <input type="text" id="cp" placeholder="Ej. 01234" />
+        <input type="text" id="cp" placeholder="Ej. 01234" required />
       </label>
 
       <label for="email">Correo Electrónico
-        <input type="email" id="email" placeholder="ejemplo@correo.com" />
+        <input type="email" id="email" placeholder="ejemplo@correo.com" required />
       </label>
 
       <label for="montoTickets">Monto exacto de su consumo en tickets
-        <input type="number" id="montoTickets" placeholder="Ej. 1500" />
+        <input type="number" id="montoTickets" placeholder="Ej. 1500" required />
       </label>
 
       <div class="actions">
@@ -176,25 +186,42 @@
   </div>
 
   <footer>
-    © 2025 IAEgo. Todos los derechos reservados.
+    © 2025 MALABAR. Todos los derechos reservados.
   </footer>
 
   <script>
     const numeroDestino = '529381025536';
+    const form = document.getElementById('facturaForm');
     const campos = [
       'razonSocial','rfc','regimenFiscal','otroRegimen',
-      'cp','email','montoTickets'
+      'usoCfdi','otroCfdi','cp','email','montoTickets'
     ];
     const statusEl = document.getElementById('status');
     let hideTimer;
 
-    // Mostrar/ocultar "otro régimen"
+    // Mostrar/ocultar "Otro"
     document.getElementById('regimenFiscal').addEventListener('change', e => {
       const otro = document.getElementById('otroRegimen');
-      if (e.target.value === 'Otros') otro.style.display = 'block';
-      else {
+      const req = otro.querySelector('input') || otro;
+      if (e.target.value === 'Otros') {
+        otro.style.display = 'block';
+        otro.required = true;
+      } else {
         otro.style.display = 'none';
         otro.value = '';
+        otro.required = false;
+      }
+      triggerSave();
+    });
+    document.getElementById('usoCfdi').addEventListener('change', e => {
+      const otro = document.getElementById('otroCfdi');
+      if (e.target.value === 'OtrosCfdi') {
+        otro.style.display = 'block';
+        otro.required = true;
+      } else {
+        otro.style.display = 'none';
+        otro.value = '';
+        otro.required = false;
       }
       triggerSave();
     });
@@ -206,12 +233,18 @@
         const el = document.getElementById(id);
         if (el) el.value = datos[id] || '';
       });
+      // Ajustar campos "Otro" al cargar
       if (datos['regimenFiscal'] === 'Otros') {
         document.getElementById('otroRegimen').style.display = 'block';
+        document.getElementById('otroRegimen').required = true;
+      }
+      if (datos['usoCfdi'] === 'OtrosCfdi') {
+        document.getElementById('otroCfdi').style.display = 'block';
+        document.getElementById('otroCfdi').required = true;
       }
     });
 
-    // Leer datos del formulario
+    // Leer datos
     const leerDatos = () => {
       const o = {};
       campos.forEach(id => o[id] = document.getElementById(id).value.trim());
@@ -223,9 +256,7 @@
       clearTimeout(hideTimer);
       localStorage.setItem('datosFactura', JSON.stringify(leerDatos()));
       statusEl.classList.add('visible');
-      hideTimer = setTimeout(() => {
-        statusEl.classList.remove('visible');
-      }, 1500);
+      hideTimer = setTimeout(() => statusEl.classList.remove('visible'), 1500);
     }
 
     // Auto‑guardado al terminar de escribir
@@ -240,15 +271,18 @@
       }
     });
 
-    // Enviar por WhatsApp
+    // Enviar por WhatsApp con validación
     document.getElementById('whatsappBtn').addEventListener('click', () => {
+      if (!form.reportValidity()) return;
       const d = leerDatos();
       const regimenTexto = d.regimenFiscal === 'Otros' ? d.otroRegimen : d.regimenFiscal;
+      const cfdiTexto    = d.usoCfdi     === 'OtrosCfdi' ? d.otroCfdi    : d.usoCfdi;
       const textoPlano = [
         '*Datos de Facturación*',
         `• Razón Social: ${d.razonSocial}`,
         `• RFC: ${d.rfc}`,
         `• Régimen Fiscal: ${regimenTexto}`,
+        `• Uso de CFDI: ${cfdiTexto}`,
         `• Código Postal: ${d.cp}`,
         `• Email: ${d.email}`,
         `• Monto consumo en tickets: ${d.montoTickets}`
