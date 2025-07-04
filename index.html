@@ -153,7 +153,7 @@
           <option value="Otros">Otro</option>
         </select>
       </label>
-      <input type="text" id="otroRegimen" placeholder="Especifica tu régimen fiscal" required />
+      <input type="text" id="otroRegimen" placeholder="Especifica tu régimen fiscal" />
 
       <label for="usoCfdi">Uso de CFDI
         <select id="usoCfdi" required>
@@ -165,7 +165,7 @@
           <option value="OtrosCfdi">Otro</option>
         </select>
       </label>
-      <input type="text" id="otroCfdi" placeholder="Especifica el uso de CFDI" required />
+      <input type="text" id="otroCfdi" placeholder="Especifica el uso de CFDI" />
 
       <label for="cp">Código Postal
         <input type="text" id="cp" placeholder="Ej. 01234" required />
@@ -186,11 +186,11 @@
   </div>
 
   <footer>
-    © 2025 IAEgo. Todos los derechos reservados.
+    © 2025 MALABAR. Todos los derechos reservados.
   </footer>
 
   <script>
-    const numeroDestino = '529381025536';
+    const numeroDestino = '9381025536';
     const form = document.getElementById('facturaForm');
     const campos = [
       'razonSocial','rfc','regimenFiscal','otroRegimen',
@@ -199,67 +199,57 @@
     const statusEl = document.getElementById('status');
     let hideTimer;
 
-    // Mostrar/ocultar "Otro"
-    document.getElementById('regimenFiscal').addEventListener('change', e => {
-      const otro = document.getElementById('otroRegimen');
-      const req = otro.querySelector('input') || otro;
-      if (e.target.value === 'Otros') {
-        otro.style.display = 'block';
-        otro.required = true;
-      } else {
-        otro.style.display = 'none';
-        otro.value = '';
-        otro.required = false;
-      }
-      triggerSave();
-    });
-    document.getElementById('usoCfdi').addEventListener('change', e => {
-      const otro = document.getElementById('otroCfdi');
-      if (e.target.value === 'OtrosCfdi') {
-        otro.style.display = 'block';
-        otro.required = true;
-      } else {
-        otro.style.display = 'none';
-        otro.value = '';
-        otro.required = false;
-      }
-      triggerSave();
-    });
+    // Función para mostrar/ocultar y gestionar el required
+    function toggleOtro(selectId, inputId, valueTrigger) {
+      const select = document.getElementById(selectId);
+      const otro = document.getElementById(inputId);
+      select.addEventListener('change', e => {
+        if (e.target.value === valueTrigger) {
+          otro.style.display = 'block';
+          otro.setAttribute('required', '');
+        } else {
+          otro.style.display = 'none';
+          otro.removeAttribute('required');
+          otro.value = '';
+        }
+        triggerSave();
+      });
+    }
+    toggleOtro('regimenFiscal', 'otroRegimen', 'Otros');
+    toggleOtro('usoCfdi',       'otroCfdi',   'OtrosCfdi');
 
-    // Carga inicial
+    // Carga inicial de localStorage
     window.addEventListener('DOMContentLoaded', () => {
       const datos = JSON.parse(localStorage.getItem('datosFactura') || '{}');
       campos.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = datos[id] || '';
       });
-      // Ajustar campos "Otro" al cargar
-      if (datos['regimenFiscal'] === 'Otros') {
-        document.getElementById('otroRegimen').style.display = 'block';
-        document.getElementById('otroRegimen').required = true;
+      if (datos.regimenFiscal === 'Otros') {
+        const otro = document.getElementById('otroRegimen');
+        otro.style.display = 'block';
+        otro.setAttribute('required','');
       }
-      if (datos['usoCfdi'] === 'OtrosCfdi') {
-        document.getElementById('otroCfdi').style.display = 'block';
-        document.getElementById('otroCfdi').required = true;
+      if (datos.usoCfdi === 'OtrosCfdi') {
+        const otro = document.getElementById('otroCfdi');
+        otro.style.display = 'block';
+        otro.setAttribute('required','');
       }
     });
 
-    // Leer datos
+    // Lectura y guardado
     const leerDatos = () => {
-      const o = {};
-      campos.forEach(id => o[id] = document.getElementById(id).value.trim());
-      return o;
+      return campos.reduce((o, id) => {
+        o[id] = document.getElementById(id).value.trim();
+        return o;
+      }, {});
     };
-
-    // Guarda y gestiona alerta
     function triggerSave() {
       clearTimeout(hideTimer);
       localStorage.setItem('datosFactura', JSON.stringify(leerDatos()));
       statusEl.classList.add('visible');
       hideTimer = setTimeout(() => statusEl.classList.remove('visible'), 1500);
     }
-
-    // Auto‑guardado al terminar de escribir
     campos.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -271,9 +261,13 @@
       }
     });
 
-    // Enviar por WhatsApp con validación
+    // Envío por WhatsApp
     document.getElementById('whatsappBtn').addEventListener('click', () => {
-      if (!form.reportValidity()) return;
+      console.log('[DEBUG] click en WhatsApp');
+      if (!form.reportValidity()) {
+        console.warn('[DEBUG] form inválido');
+        return;
+      }
       const d = leerDatos();
       const regimenTexto = d.regimenFiscal === 'Otros' ? d.otroRegimen : d.regimenFiscal;
       const cfdiTexto    = d.usoCfdi     === 'OtrosCfdi' ? d.otroCfdi    : d.usoCfdi;
